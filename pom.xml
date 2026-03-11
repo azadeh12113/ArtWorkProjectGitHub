@@ -20,18 +20,35 @@
 
 	<properties>
 		<java.version>17</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<sonar.host.url>http://localhost:18080</sonar.host.url>
+		<sonar.projectKey>artwork-project</sonar.projectKey>
+
+		<sonar.coverage.exclusions>
+			**/model/*.*,
+			**/*Application.*,
+			**/Main.*,
+			**/config/*.*
+		</sonar.coverage.exclusions>
+
+		<sonar.junit.reportPaths>
+			${project.build.directory}/surefire-reports,
+			${project.build.directory}/failsafe-reports
+		</sonar.junit.reportPaths>
 	</properties>
 
 	<dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>org.javassist</groupId>
-      <artifactId>javassist</artifactId>
-      <version>3.30.2-GA</version>
-    </dependency>
-  </dependencies>
-</dependencyManagement>
-<dependencies>
+		<dependencies>
+			<dependency>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>3.30.2-GA</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
 		<!-- Core Spring Boot -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -65,7 +82,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
-
 			<exclusions>
 				<exclusion>
 					<groupId>org.junit.jupiter</groupId>
@@ -224,38 +240,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!-- JaCoCo -->
-				<plugin>
-					<groupId>org.jacoco</groupId>
-					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.8</version>
-					<configuration>
-						<excludes>
-
-							<exclude>**/model/*.*</exclude>
-							<exclude>**/*Application.*</exclude>
-							<exclude>**/Main.*</exclude>
-							<exclude>com/example/ArtWork/config/*</exclude>
-
-						</excludes>
-					</configuration>
-					<executions>
-						<execution>
-							<phase>initialize</phase>
-							<goals>
-								<goal>prepare-agent</goal>
-							</goals>
-						</execution>
-						<execution>
-							<id>report</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>report</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-				<!-- PIT removed  -->
+				<!-- PIT removed -->
 			</plugins>
 		</pluginManagement>
 
@@ -317,28 +302,25 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<!-- PIT (mutation testing) -->
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
 				<version>1.15.8</version>
 				<configuration>
-					<!-- Spring Boot tests can be slower; avoid PIT marking mutants as TIMED_OUT -->
 					<timeoutConstant>8000</timeoutConstant>
 					<timeoutFactor>2.0</timeoutFactor>
-					<!-- Make debugging easier and reduce flakiness on Windows -->
 					<threads>1</threads>
-					<!-- your existing targeting -->
 					<targetClasses>
-						<param>com.example.ArtWork.service.*</param>
-						<param>com.example.ArtWork.repository.*</param>
+						<param>com.example.ArtWork.Service.*</param>
+						<param>com.example.ArtWork.Repository.*</param>
 						<param>com.example.ArtWork.controller.*</param>
 					</targetClasses>
 					<targetTests>
 						<param>com.example.ArtWork.Service.*Test</param>
 						<param>com.example.ArtWork.Repository.*Test</param>
 						<param>com.example.ArtWork.controller.*Test</param>
-
 					</targetTests>
 					<excludedClasses>
 						<param>com.example.ArtWork.model.*</param>
@@ -358,53 +340,47 @@
 						<param>equals</param>
 						<param>hashCode</param>
 					</excludedMethods>
-
-					<!-- mutators & threshold -->
 					<mutators>
 						<mutator>DEFAULTS</mutator>
 					</mutators>
 					<mutationThreshold>80</mutationThreshold>
-
 				</configuration>
-
-			</plugin>
-
-			<!-- JaCoCo (coverage) -->
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.8</version>
-				<executions>
-					<execution>
-						<id>prepare-agent</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-						<configuration>
-							<excludes>
-								<exclude>**/model/*</exclude>
-								<exclude>**/*Application*</exclude>
-								<exclude>**/Main*</exclude>
-								<exclude>com/example/ArtWork/config/*</exclude>
-								<!-- HtmlUnit (very large generated initializers) -->
-								<exclude>com/gargoylesoftware/htmlunit/**</exclude>
-								<exclude>org/htmlunit/**</exclude>
-							</excludes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>report</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
 
 	<profiles>
+		<profile>
+			<id>jacoco</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<version>0.8.8</version>
+						<configuration>
+							<excludes>
+								<exclude>**/model/*.*</exclude>
+								<exclude>**/*Application.*</exclude>
+								<exclude>**/Main.*</exclude>
+								<exclude>**/config/*.*</exclude>
+								<exclude>com/gargoylesoftware/htmlunit/**</exclude>
+								<exclude>org/htmlunit/**</exclude>
+							</excludes>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>prepare-agent</goal>
+									<goal>report</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
 		<profile>
 			<id>docker</id>
 			<build>
@@ -482,8 +458,7 @@
 
 								<!-- Spring Boot app -->
 								<image>
-									<name>
-										${project.groupId}/${project.artifactId}:${project.version}</name>
+									<name>${project.groupId}/${project.artifactId}:${project.version}</name>
 									<build>
 										<contextDir>${project.basedir}</contextDir>
 									</build>
@@ -499,8 +474,7 @@
 										</dependsOn>
 										<wait>
 											<http>
-												<url>
-													http://localhost:8080/actuator/health</url>
+												<url>http://localhost:8080/actuator/health</url>
 												<status>200</status>
 											</http>
 											<time>60000</time>
@@ -518,199 +492,6 @@
 				</plugins>
 			</build>
 		</profile>
-		<profile>
-			<id>jacoco</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<configuration>
-						
-							<propertyName>surefireArgLine</propertyName>
-						</configuration>
-					</plugin>
-
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<!-- Pass that property ONLY to Surefire -->
-							<argLine>${surefireArgLine}</argLine>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>e2e-tests</id>
-			<build>
-				<plugins>
-					<!-- Reserve a free TCP port for the Spring Boot app -->
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>build-helper-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>reserve-http-port</id>
-								<phase>process-resources</phase>
-								<goals>
-									<goal>reserve-network-port</goal>
-								</goals>
-								<configuration>
-									<portNames>
-										<portName>tomcat.http.port</portName>
-									</portNames>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-
-					<!-- Start and stop a real MySQL- Docker- for E2E -->
-					<plugin>
-						<groupId>io.fabric8</groupId>
-						<artifactId>docker-maven-plugin</artifactId>
-						<version>0.45.1</version>
-						<configuration>
-							<images>
-								<image>
-									<name>mysql:8.0.36</name>
-									<alias>mysql-e2e</alias>
-									<run>
-										<namingStrategy>alias</namingStrategy>
-										<env>
-											<MYSQL_ROOT_PASSWORD>${MYSQL_ROOT_PASSWORD}</MYSQL_ROOT_PASSWORD>
-											<MYSQL_DATABASE>${MYSQL_DATABASE}</MYSQL_DATABASE>
-										</env>
-										<ports>
-											<port>3307:3306</port>
-										</ports>
-										<autoRemove>true</autoRemove>
-									</run>
-								</image>
-							</images>
-						</configuration>
-						<executions>
-							<execution>
-								<id>start-mysql</id>
-								<phase>pre-integration-test</phase>
-								<goals><goal>start</goal></goals>
-							</execution>
-						</executions>
-					</plugin>
-
-					<!-- Wait until MySQL is really ready, then reset the E2E database -->
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>3.3.0</version>
-						<executions>
-							<execution>
-								<id>wait-for-mysql-ready</id>
-								<phase>pre-integration-test</phase>
-								<goals><goal>exec</goal></goals>
-								<configuration>
-									<executable>docker</executable>
-									<arguments>
-										<argument>exec</argument>
-										<argument>mysql-e2e</argument>
-										<argument>bash</argument>
-										<argument>-c</argument>
-										<argument>until mysqladmin ping -h127.0.0.1 -uroot -p${env.MYSQL_ROOT_PASSWORD} --silent; do echo waiting_for_mysql; sleep 2; done</argument>
-									</arguments>
-								</configuration>
-							</execution>
-							<execution>
-								<id>reset-e2e-database</id>
-								<phase>pre-integration-test</phase>
-								<goals><goal>exec</goal></goals>
-								<configuration>
-									<executable>docker</executable>
-									<arguments>
-										<argument>exec</argument>
-										<argument>mysql-e2e</argument>
-										<argument>mysql</argument>
-										<argument>-uroot</argument>
-										<argument>-p${env.MYSQL_ROOT_PASSWORD}</argument>
-										<argument>-e</argument>
-										<argument>DROP DATABASE IF EXISTS artworkdb_e2e; CREATE DATABASE artworkdb_e2e;</argument>
-									</arguments>
-								</configuration>
-							</execution>
-							<execution>
-								<id>cleanup-mysql-container</id>
-								<phase>post-integration-test</phase>
-								<goals><goal>exec</goal></goals>
-								<configuration>
-									<executable>powershell</executable>
-									<arguments>
-										<argument>-NoProfile</argument>
-										<argument>-Command</argument>
-										<argument>docker rm -f mysql-e2e 2&gt;$null; exit 0</argument>
-									</arguments>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-
-					<!-- Start/stop Spring Boot app -->
-					<plugin>
-						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>pre-integration-test</id>
-								<goals>
-									<goal>start</goal>
-								</goals>
-								<configuration>
-									<!-- Use Spring properties(application-e2e.properties) -->
-									<profiles>
-										<profile>e2e</profile>
-									</profiles>
-									<arguments>
-										<argument>
-											--server.port=${tomcat.http.port}</argument>
-									</arguments>
-									<environmentVariables>
-
-										<SERVER_PORT>${tomcat.http.port}</SERVER_PORT>
-										<MYSQL_PORT>3307</MYSQL_PORT>
-									</environmentVariables>
-								</configuration>
-							</execution>
-							<execution>
-								<id>post-integration-test</id>
-								<goals>
-									<goal>stop</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>e2e-tests</id>
-								<goals>
-									<goal>integration-test</goal>
-									<goal>verify</goal>
-								</goals>
-								<configuration>
-									<includes>
-										<include>**/*E2E.java</include>
-									</includes>
-									<systemPropertyVariables>
-										<server.port>${tomcat.http.port}</server.port>
-									</systemPropertyVariables>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 	</profiles>
+
 </project>
