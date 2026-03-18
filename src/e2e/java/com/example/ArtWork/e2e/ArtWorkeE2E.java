@@ -18,7 +18,7 @@ import java.util.*;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-public class ArtWorke2e { 
+public class ArtWorkE2E { 
 
   private static final Logger LOGGER =
       LoggerFactory.getLogger(ArtWorke2e.class);
